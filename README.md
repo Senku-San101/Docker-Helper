@@ -1,53 +1,47 @@
-# 🐳 Docker Command Helper
+# 🐳 Docker Command Helper (v2)
 
 An interactive, menu-driven Bash tool for the `docker` CLI. Never google
 `docker run` flags again.
 
-## Features
+## What's new in v2
 
-- 🛡️ **Safe & interactive**: every command is previewed and confirmed. Destructive ones (rm, prune, `down -v`) default to **No**.
-- 🧠 **Learn as you go**: each action explains what it does and shows the exact command.
-- ✅ **Input validation**: image names, container names, ports (1-65535), `KEY=VALUE` env vars, volumes, CIDR/IP, memory/CPU limits.
-- ⭐ **Favorites**: save any command and replay it later (`~/.docker-helper/saved-commands.tsv`).
-- 📝 **Logging**: timestamped history in `~/.docker-helper/docker-helper.log`.
-- 🔐 **Smart sudo**: uses `sudo` only if your user can't talk to the daemon.
-- 🧪 **Dry-run mode**: `--dry-run` prints commands without running anything.
-- 🎯 **Pickers**: choose containers / images / volumes / networks from numbered lists instead of typing names.
+- **Dashboard screens**: the terminal is cleared and redrawn on every menu, so nothing stacks up.
+  The main screen shows live counts (running / stopped / images / volumes / networks) and your running containers.
+- **Box tables with status dots**: containers, images, volumes, networks, stats, disk usage, history, favorites, log.
+  Green = running, yellow = paused/starting, red = exited with error or unhealthy, grey = created / clean exit.
+- **Grouped menus**: options are laid out in columns (View / Control / Change) instead of one long wall of text.
+- **Readable commands**: long commands are shown one option per line, like a real shell script.
+- **Edit an existing container** (Containers → Edit settings):
+  - *Instant (no restart):* restart policy, memory limit, CPU limit, rename
+  - *Needs rebuild:* ports, environment variables, volumes, edited in small tables (`a` add, `e N` edit, `d N` delete)
+  - Rebuild is done safely: old container is renamed to `NAME-backup-HHMMSS`, new one is created,
+    and if it fails to start the old one is **restored automatically**.
 
-## Modules
+## Features carried over
 
-| Module | What it covers |
-|---|---|
-| Containers | list, run wizard (ports, env, volumes, restart policy, limits), start/stop/restart, logs, shell, inspect, stats, cp, rename, pause, prune |
-| Images | list, pull, build wizard, tag, push, search, history, save/load, rmi, prune |
-| Volumes | list, create, inspect, remove, prune |
-| Networks | list, create (driver/subnet/gateway), connect/disconnect, inspect, remove, prune |
-| Compose | up, rebuild, down, ps, logs, build, pull, restart/stop/start, shell, config (v2 plugin or legacy `docker-compose`) |
-| System | disk usage, safe/aggressive prune, login/logout, info, version, events |
+- Every command is previewed and confirmed. Destructive ones default to **No**.
+- Input validation (names, images, ports 1-65535, `KEY=VALUE`, volumes, CIDR/IP, memory/CPU).
+- Timestamped log, smart `sudo`, saved favorites, `--dry-run`.
 
 ## Quick start
 
 ```bash
 chmod +x docker-helper.sh
-./docker-helper.sh            # normal
-./docker-helper.sh --dry-run  # just show commands
+./docker-helper.sh              # normal
+./docker-helper.sh --dry-run    # show commands, never execute
+./docker-helper.sh --no-clear   # don't clear the screen between menus
 ```
 
-Requires: Bash 4+, Docker CLI (and the daemon running).
+Requires Bash 4.3+ (macOS: `brew install bash`) and the Docker CLI.
+`DH_KEEP_SCROLLBACK=1` keeps terminal scrollback when clearing.
 
-## Example: run nginx on port 8080
+## Editing a container: what is carried over on rebuild
 
-```
-Containers → Run new container
-Image: nginx:latest
-Name: web
-Detached? y     Restart policy: unless-stopped
-Port: 8080:80
-...
-Command to run:
-  docker run -d --restart unless-stopped --name web -p 8080:80 nginx:latest
-Run it? (Y/n): y
-```
+Image, name, restart policy, ports, env vars (only the ones you set, not image defaults), volumes/bind mounts,
+network, memory, CPUs, user, workdir, entrypoint/command overrides, TTY/stdin flags.
+
+**Not carried over** (you get a warning before applying): privileged mode, added capabilities, devices, custom DNS,
+extra hosts, security options, ulimits, multiple networks, Compose-managed containers (edit the compose file instead).
 
 ## Files
 
@@ -56,8 +50,4 @@ Run it? (Y/n): y
 | `~/.docker-helper/docker-helper.log` | Action log |
 | `~/.docker-helper/saved-commands.tsv` | Favorites |
 
-Set `DOCKER_HELPER_HOME` to change the location.
-
-## License
-
-MIT
+Set `DOCKER_HELPER_HOME` to change the location. License: MIT.
